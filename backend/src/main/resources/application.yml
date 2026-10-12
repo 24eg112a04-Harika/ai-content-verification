@@ -14,6 +14,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    open-in-view: false
     show-sql: false
     properties:
       hibernate:
@@ -28,7 +29,10 @@ spring:
       max-request-size: 30MB
 
 app:
+  # Set to false in production to skip seeding demo users / sample records
+  seed-demo-data: ${SEED_DEMO_DATA:true}
   jwt:
+    # IMPORTANT: set a strong, unique JWT_SECRET in production
     secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
   ai:

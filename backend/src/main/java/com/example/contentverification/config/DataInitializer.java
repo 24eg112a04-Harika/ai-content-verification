@@ -6,6 +6,7 @@ import com.example.contentverification.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -27,9 +28,17 @@ public class DataInitializer implements CommandLineRunner {
     private final ActivityLogRepository activityLogRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.seed-demo-data:true}")
+    private boolean seedDemoData;
+
     @Override
     @Transactional
     public void run(String... args) {
+        if (!seedDemoData) {
+            logger.info("Demo data seeding is disabled (app.seed-demo-data=false). Skipping.");
+            return;
+        }
+
         if (userRepository.count() > 0) {
             logger.info("Database already seeded. Skipping initial data population.");
             return;
@@ -79,6 +88,7 @@ public class DataInitializer implements CommandLineRunner {
                 .publisher("Indian Space Research Organisation (ISRO)")
                 .publicationDate("2023-08-23")
                 .retrievedAt(LocalDateTime.now().minusHours(2))
+                .contentExcerpt("Chandrayaan-3 is a follow-on mission to Chandrayaan-2 to demonstrate end-to-end capability in safe landing and roving on the lunar surface. Launched on 14 July 2023.")
                 .sourceMetadata("{\"organization\":\"ISRO\",\"verification_confidence\":\"authoritative\"}")
                 .build();
         isroSource = sourceRepository.save(isroSource);
@@ -89,6 +99,7 @@ public class DataInitializer implements CommandLineRunner {
                 .publisher("Nature Journal")
                 .publicationDate("2023-08-23")
                 .retrievedAt(LocalDateTime.now().minusHours(2))
+                .contentExcerpt("The Chandrayaan-3 spacecraft touched down in the unexplored lunar south polar zone, making India the fourth nation to land on the Moon and the first near the lunar south pole.")
                 .sourceMetadata("{\"type\":\"peer_reviewed_press\",\"doi\":\"10.1038/d41586-023-02690-0\"}")
                 .build();
         natureSource = sourceRepository.save(natureSource);

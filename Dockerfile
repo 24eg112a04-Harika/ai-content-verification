@@ -23,10 +23,17 @@ RUN mvn -DskipTests package
 
 # Stage 3: Run the combined application
 FROM eclipse-temurin:21-jre
+RUN groupadd -r appuser && useradd -r -g appuser -m appuser
 WORKDIR /app
 
-COPY --from=backend-build /app/target/*.jar app.jar
+COPY --chown=appuser:appuser --from=backend-build /app/target/*.jar app.jar
+
+USER appuser
 
 EXPOSE 10000
+
+# TCP-level liveness probe (the JRE image ships bash)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+  CMD ["bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/10000 || exit 1"]
 
 CMD ["sh", "-c", "java -Dserver.port=${PORT:-10000} -jar app.jar"]

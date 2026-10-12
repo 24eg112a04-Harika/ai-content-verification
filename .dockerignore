@@ -1,0 +1,27 @@
+# Version control
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.iml
+
+# Build artifacts (rebuilt inside the image)
+frontend/node_modules
+frontend/dist
+backend/target
+target
+
+# Local env / secrets
+.env
+*.key
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS noise
+.DS_Store
+Thumbs.db

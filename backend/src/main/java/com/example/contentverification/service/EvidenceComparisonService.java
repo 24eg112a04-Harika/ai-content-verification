@@ -57,10 +57,14 @@ public class EvidenceComparisonService {
         Set<String> claimTokens = tokenize(claimLower);
 
         for (Source source : sources) {
-            String excerpt = source.getSourceMetadata();
-            // Fallback excerpt from title/publisher if metadata is brief
-            if (excerpt == null || excerpt.length() < 10) {
-                excerpt = source.getTitle() + " published by " + source.getPublisher();
+            // Score against the real retrieved text. sourceMetadata holds JSON
+            // metadata and is only used as a last-resort display fallback.
+            String excerpt = source.getContentExcerpt();
+            if (excerpt == null || excerpt.isBlank()) {
+                excerpt = buildFallbackExcerpt(source);
+            } else if (excerpt.length() < 10 && source.getTitle() != null) {
+                // Very short snippet: enrich with title context before scoring
+                excerpt = source.getTitle() + " — " + excerpt;
             }
 
             String excerptLower = excerpt.toLowerCase(Locale.ROOT);
@@ -136,6 +140,26 @@ public class EvidenceComparisonService {
         explanationBuilder.append("Note: Verification assessments reflect available public documentation at the time of retrieval and do not represent mathematical certainty.");
 
         return new ComparisonResult(overallStatus, explanationBuilder.toString(), evidenceList);
+    }
+
+    /**
+     * Composes a human-readable fallback excerpt when no retrieved snippet
+     * exists (e.g. rows created before the content_excerpt column existed).
+     */
+    private String buildFallbackExcerpt(Source source) {
+        StringBuilder sb = new StringBuilder();
+        if (source.getTitle() != null && !source.getTitle().isBlank()) {
+            sb.append(source.getTitle().trim());
+        }
+        if (source.getPublisher() != null && !source.getPublisher().isBlank()) {
+            sb.append(" published by ").append(source.getPublisher().trim());
+        }
+        String metadata = source.getSourceMetadata();
+        if (metadata != null && !metadata.isBlank() && !metadata.trim().startsWith("{")) {
+            // Only include non-JSON metadata as readable text
+            sb.append(". ").append(metadata.trim());
+        }
+        return sb.toString();
     }
 
     private double calculateOverlap(Set<String> setA, Set<String> setB) {

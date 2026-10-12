@@ -59,6 +59,7 @@ public class SourceRetrievalService {
                                 .publisher(dto.publisher())
                                 .publicationDate(dto.publicationDate())
                                 .retrievedAt(LocalDateTime.now())
+                                .contentExcerpt(dto.excerpt())
                                 .sourceMetadata(dto.sourceMetadata())
                                 .build();
                         return sourceRepository.save(newSource);
