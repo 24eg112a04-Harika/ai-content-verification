@@ -3,14 +3,16 @@ import { X, Lock, Mail, User, AlertCircle, ShieldCheck, Sparkles } from 'lucide-
 import { authApi, setToken, setStoredUser } from '../services/api';
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
-  if (!isOpen) return null;
-
+  // NOTE: all hooks must run before any early return (Rules of Hooks).
+  // Returning before these previously crashed the app when the modal closed.
   const [mode, setMode] = useState('login'); // 'login' or 'register'
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();

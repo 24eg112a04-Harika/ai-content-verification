@@ -34,9 +34,20 @@ public class VerificationProcessorService {
     @Async
     public void processVerificationAsync(Long recordId) {
         try {
-            VerificationRecord record = verificationRecordRepository.findById(recordId)
-                    .orElse(null);
-            if (record == null) return;
+            // The submitting request's transaction may not be committed yet when
+            // this worker wakes up, so retry briefly before giving up instead of
+            // leaving the record stuck in PENDING forever.
+            VerificationRecord record = null;
+            for (int attempt = 0; attempt < 10 && record == null; attempt++) {
+                if (attempt > 0) {
+                    Thread.sleep(300);
+                }
+                record = verificationRecordRepository.findById(recordId).orElse(null);
+            }
+            if (record == null) {
+                logger.warn("Verification record {} not found after retries; abandoning async processing", recordId);
+                return;
+            }
 
             record.setProcessingStatus(ProcessingStatus.PROCESSING);
             verificationRecordRepository.save(record);

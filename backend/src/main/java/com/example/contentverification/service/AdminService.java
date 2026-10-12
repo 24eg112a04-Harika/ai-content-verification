@@ -6,6 +6,7 @@ import com.example.contentverification.entity.Source;
 import com.example.contentverification.entity.User;
 import com.example.contentverification.entity.VerificationRecord;
 import com.example.contentverification.enums.AccountStatus;
+import com.example.contentverification.enums.InputType;
 import com.example.contentverification.enums.ProcessingStatus;
 import com.example.contentverification.enums.Role;
 import com.example.contentverification.enums.VerificationStatus;
@@ -144,16 +145,12 @@ public class AdminService {
         statusDistribution.put("Partially Supported", mixed);
         statusDistribution.put("Insufficient Evidence", insufficient);
 
-        long pending = verificationRecordRepository.countByProcessingStatus(ProcessingStatus.PENDING);
-        long processing = verificationRecordRepository.countByProcessingStatus(ProcessingStatus.PROCESSING);
-        long completed = verificationRecordRepository.countByProcessingStatus(ProcessingStatus.COMPLETED);
-        long failedRecords = verificationRecordRepository.countByProcessingStatus(ProcessingStatus.FAILED);
-
-        Map<String, Long> requestsByStatus = new HashMap<>();
-        requestsByStatus.put("Pending", pending);
-        requestsByStatus.put("Processing", processing);
-        requestsByStatus.put("Completed", completed);
-        requestsByStatus.put("Failed", failedRecords);
+        // Group requests by input channel (same semantics as the user dashboard)
+        List<VerificationRecord> records = verificationRecordRepository.findAll();
+        Map<String, Long> requestsByType = new HashMap<>();
+        requestsByType.put("Text", records.stream().filter(r -> r.getInputType() == InputType.TEXT).count());
+        requestsByType.put("Article URL", records.stream().filter(r -> r.getInputType() == InputType.URL).count());
+        requestsByType.put("File Upload", records.stream().filter(r -> r.getInputType() == InputType.FILE).count());
 
         return DashboardSummaryResponse.builder()
                 .totalRequests(totalRequests)
@@ -168,7 +165,7 @@ public class AdminService {
                 .mixedPercentage(mixedPct)
                 .insufficientPercentage(insufficientPct)
                 .statusDistribution(statusDistribution)
-                .requestsByInputType(requestsByStatus)
+                .requestsByInputType(requestsByType)
                 .build();
     }
 }

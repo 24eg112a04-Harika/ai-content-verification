@@ -13,6 +13,7 @@ import com.example.contentverification.repository.EvidenceRepository;
 import com.example.contentverification.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +27,9 @@ public class ClaimController {
     private final EvidenceRepository evidenceRepository;
     private final SecurityUtils securityUtils;
 
+    // @Transactional keeps the JPA session open while the LAZY associations
+    // (claim -> verificationRecord -> user, evidence -> source) are accessed.
+    @Transactional(readOnly = true)
     @GetMapping("/verifications/{id}/claims")
     public ResponseEntity<ApiResponse<List<ClaimResponse>>> getClaimsByVerificationRecord(@PathVariable Long id) {
         Long userId = securityUtils.getCurrentUserId();
@@ -43,6 +47,7 @@ public class ClaimController {
         return ResponseEntity.ok(ApiResponse.ok(responses));
     }
 
+    @Transactional(readOnly = true)
     @GetMapping("/claims/{claimId}")
     public ResponseEntity<ApiResponse<ClaimResponse>> getClaimById(@PathVariable Long claimId) {
         Long userId = securityUtils.getCurrentUserId();
@@ -58,6 +63,7 @@ public class ClaimController {
         return ResponseEntity.ok(ApiResponse.ok(mapClaimToResponse(claim)));
     }
 
+    @Transactional(readOnly = true)
     @GetMapping("/claims/{claimId}/evidence")
     public ResponseEntity<ApiResponse<List<EvidenceResponse>>> getEvidenceByClaimId(@PathVariable Long claimId) {
         Long userId = securityUtils.getCurrentUserId();

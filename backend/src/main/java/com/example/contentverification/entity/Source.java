@@ -35,6 +35,14 @@ public class Source {
     @Column(name = "retrieved_at", nullable = false)
     private LocalDateTime retrievedAt;
 
+    /**
+     * Actual retrieved text snippet for the source. Used by the evidence
+     * comparison engine to score relevance. Metadata JSON is not suitable
+     * for text similarity scoring.
+     */
+    @Column(name = "content_excerpt", columnDefinition = "TEXT")
+    private String contentExcerpt;
+
     @Column(name = "source_metadata", columnDefinition = "TEXT")
     private String sourceMetadata;
 }

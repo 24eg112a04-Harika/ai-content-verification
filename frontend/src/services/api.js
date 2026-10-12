@@ -43,14 +43,26 @@ const request = async (endpoint, options = {}) => {
       headers,
     });
 
-    const data = await response.json();
+    // Parse defensively: security filters can return empty or non-JSON bodies
+    const rawText = await response.text();
+    let data = null;
+    if (rawText) {
+      try {
+        data = JSON.parse(rawText);
+      } catch (parseErr) {
+        data = null;
+      }
+    }
 
     if (!response.ok) {
-      const errorMsg = data.message || (data.details && data.details.join(', ')) || `HTTP ${response.status} Error`;
+      const errorMsg =
+        (data && data.message) ||
+        (data && data.details && data.details.join(', ')) ||
+        (response.status === 401 ? 'Session expired or not signed in. Please sign in again.' : `HTTP ${response.status} Error`);
       throw new Error(errorMsg);
     }
 
-    return data;
+    return data !== null ? data : {};
   } catch (err) {
     console.error(`API Error on ${endpoint}:`, err);
     throw err;
@@ -149,7 +161,7 @@ export const adminApi = {
     return request(`/admin/verifications${qStr}`);
   },
   getSystemSummary: async () => {
-    return request('/admin/analytics/summary');
+    return request('/admin/stats');
   },
   getAllSources: async (query) => {
     const params = new URLSearchParams();
@@ -158,6 +170,6 @@ export const adminApi = {
     return request(`/admin/sources${qStr}`);
   },
   getActivityLogs: async () => {
-    return request('/admin/activity-logs');
+    return request('/admin/activity');
   },
 };

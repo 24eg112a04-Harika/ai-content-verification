@@ -31,9 +31,10 @@ class EvidenceComparisonServiceTest {
 
         Source source = Source.builder()
                 .url("https://www.isro.gov.in/Chandrayaan3.html")
-                .title("ISRO Chandrayaan-3")
-                .publisher("ISRO")
-                .sourceMetadata("Chandrayaan-3 was launched by India in July 2023 to explore the Moon.")
+                .title("ISRO Official Release: Chandrayaan-3 Mission Profile")
+                .publisher("Indian Space Research Organisation (ISRO)")
+                .contentExcerpt("India successfully accomplished lunar soft landing of the Vikram Lander with Pragyan Rover on the lunar south polar region on August 23, 2023. Launched on 14 July 2023.")
+                .sourceMetadata("{\"organization\":\"ISRO\",\"verification_confidence\":\"authoritative\"}")
                 .retrievedAt(LocalDateTime.now())
                 .build();
 

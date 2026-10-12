@@ -19,6 +19,9 @@ public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
+    /** The well-known demo default; production deployments must override via JWT_SECRET. */
+    private static final String DEFAULT_DEMO_SECRET = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+
     private final SecretKey key;
     private final long jwtExpirationMs;
 
@@ -40,6 +43,14 @@ public class JwtTokenProvider {
         }
         this.key = secretKey;
         this.jwtExpirationMs = jwtExpirationMs;
+
+        if (DEFAULT_DEMO_SECRET.equals(jwtSecret)) {
+            logger.warn("==============================================================");
+            logger.warn("Using the DEFAULT demo JWT secret. This is insecure for");
+            logger.warn("production. Set the JWT_SECRET environment variable to a");
+            logger.warn("random value of at least 64 characters.");
+            logger.warn("==============================================================");
+        }
     }
 
     public String generateToken(Authentication authentication) {

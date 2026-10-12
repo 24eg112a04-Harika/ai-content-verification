@@ -1,0 +1,62 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: verisource-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-content_verification_db}
+      MYSQL_USER: ${MYSQL_USER:-verisource}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-verisource_secret_change_me}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-verisource_root_change_me}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "127.0.0.1",
+          "-uroot",
+          "-p${MYSQL_ROOT_PASSWORD:-verisource_root_change_me}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    # Uncomment to reach the DB from the host (port 3306)
+    # ports:
+    #   - "3306:3306"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: verisource-app:latest
+    container_name: verisource-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-10000}:10000"
+    environment:
+      PORT: "10000"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://db:3306/${MYSQL_DATABASE:-content_verification_db}?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true"
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-verisource}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-verisource_secret_change_me}
+      # REQUIRED in production: a long random value (64+ chars)
+      JWT_SECRET: ${JWT_SECRET:-7ce85894987de86e9870dc4e7088c76cd25c4665b196cfc192a131b2b1eb9094d5c862ba786134ef809c4cfe6b4ac9fc}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      # Set to "false" in production to skip the demo accounts / sample record
+      SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:3000,http://127.0.0.1:5173}
+      # Optional real AI/search integrations (DEMO = built-in heuristics + Wikipedia)
+      AI_PROVIDER: ${AI_PROVIDER:-DEMO}
+      AI_API_KEY: ${AI_API_KEY:-}
+      SEARCH_PROVIDER: ${SEARCH_PROVIDER:-DEMO}
+      SEARCH_API_KEY: ${SEARCH_API_KEY:-}
+
+volumes:
+  db_data:

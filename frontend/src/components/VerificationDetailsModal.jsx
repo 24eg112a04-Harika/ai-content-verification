@@ -17,9 +17,10 @@ import {
 } from 'lucide-react';
 
 export default function VerificationDetailsModal({ record, onClose }) {
-  if (!record) return null;
-
+  // NOTE: hooks must run before any early return (Rules of Hooks).
   const [expandedClaimId, setExpandedClaimId] = useState(null);
+
+  if (!record) return null;
 
   const toggleClaim = (id) => {
     setExpandedClaimId(expandedClaimId === id ? null : id);
