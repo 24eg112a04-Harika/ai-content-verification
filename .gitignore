@@ -1,0 +1,16 @@
+# Java / Spring Boot
+backend/target/
+*.class
+
+# Node / React
+frontend/node_modules/
+frontend/dist/
+
+# Secrets
+.env
+**/.env
+*.key
+
+# IDE files
+.idea/
+.vscode/
