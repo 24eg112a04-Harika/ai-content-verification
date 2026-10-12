@@ -100,7 +100,7 @@ public class SecurityConfig {
      * empty body.
      */
     private AuthenticationEntryPoint jsonAuthenticationEntryPoint() {
-        return (HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.Authentication authException)
+        return (HttpServletRequest request, HttpServletResponse response, org.springframework.security.core.AuthenticationException authException)
                 -> writeJsonError(response, HttpStatus.UNAUTHORIZED, "Unauthorized", "Authentication is required to access this resource. Please sign in.");
     }
 
