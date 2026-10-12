@@ -77,8 +77,9 @@ Lint the frontend with `cd frontend && npm run lint`; production build with `npm
 ## Project layout
 
 ```
+Dockerfile                Multi-stage: builds frontend, bakes dist/ into the jar
+                          (root of the repo — used by CI and docker compose)
 backend/                  Spring Boot 3.3 application
-  Dockerfile              Multi-stage: builds frontend, bakes dist/ into the jar
   pom.xml                 Maven build (Java 21)
   src/main/resources
     application.yml       Config (all secrets via env vars)
